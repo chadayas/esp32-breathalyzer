@@ -125,40 +125,12 @@ esp_err_t WifiService::connect(){
     return ESP_FAIL;
 }
 
-esp_err_t WifiService::deinit(){
-    esp_err_t ret = esp_wifi_stop();
-    if (ret == ESP_ERR_WIFI_NOT_INIT) {
-        ESP_LOGE(TAG, "Wi-Fi stack not initialized");
-        return ret;
-    }
-
-    ESP_ERROR_CHECK(esp_wifi_deinit());
-    ESP_ERROR_CHECK(esp_wifi_clear_default_wifi_driver_and_handlers(tutorial_netif));
-    esp_netif_destroy(tutorial_netif);
-
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, ESP_EVENT_ANY_ID, ip_event_handler));
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler));
-
-    return ESP_OK;
-}
-
-esp_err_t WifiService::disconnect(){
-    if (wifi_event_group) {
-        vEventGroupDelete(wifi_event_group);
-    }
-
-    return esp_wifi_disconnect();
-}
 
 WifiService::WifiService(){
 	init();
 	connect();
 }
 
-WifiService::~WifiService(){
-	deinit();
-	disconnect();
-}
 
 adc_oneshot_unit_handle_t adc1_handle;
 
@@ -344,10 +316,6 @@ httpd_handle_t Httpserver::init(){
 	}
 }
 
-void Httpserver::deinit(){
-	if(svr != NULL)
-		httpd_stop(svr);
-}
 
 esp_err_t Httpserver::register_route(const httpd_uri_t *uri_cfg){
     return httpd_register_uri_handler(svr, uri_cfg);
@@ -357,9 +325,6 @@ Httpserver::Httpserver(){
 	init();
 }
 
-Httpserver::~Httpserver(){
-	deinit();
-}
 
 extern "C" void app_main(void){
 	WifiService wifi; // connects to the wifi.
